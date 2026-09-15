@@ -2,7 +2,7 @@
 FROM maven:3.9-eclipse-temurin-26 AS build
 WORKDIR /app
 
-# Descargar dependencias para aprovechar la caché de capas de Docker
+# Descargar dependencias para aprovechar la caché de Docker
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
@@ -10,14 +10,14 @@ RUN mvn dependency:go-offline
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Imagen ligera de ejecución para Java 26
-FROM eclipse-temurin:26-jre-alpine
+# Etapa 2: Imagen de ejecución para Java 26
+FROM eclipse-temurin:26-jre
 WORKDIR /app
 
-# Copiar el archivo .jar compilado en la etapa anterior
+# Copiar el JAR generado en la etapa anterior
 COPY --from=build /app/target/*.jar app.jar
 
-# Render inyecta dinámicamente la variable de entorno PORT
+# Render asigna dinámicamente el puerto
 EXPOSE 8080
 
 ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
